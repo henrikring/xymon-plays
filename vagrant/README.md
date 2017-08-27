@@ -26,7 +26,7 @@ cd /cygdrive/c/github/xymon-plays/vagrant
 vagrant up
 
 # If Vagrant fails in bringe up the three servers you can delete the VMs and start over, by using the command:
-vagrant destroy -fi
+vagrant destroy -f
 
 # and the start again:
 vagrant up
