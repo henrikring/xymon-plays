@@ -1,4 +1,6 @@
-## Prerequisites, Software
+## Vagrant quick guide
+
+### Prerequisites, Software
 * Install Cygwin: https://cygwin.com/install.html  
   If you wish to also use Cygwin as your git command line client (works very well), but there are many other ways of having a command line and Git setup on a Windows host.
 * Install VirtualBox: https://www.virtualbox.org/wiki/Downloads  
@@ -13,7 +15,7 @@
   To verify this, open VirtualBox, click the "New" button, under "Version" ensure that 64-bit options are listed along side with 32-bit options. If only 32-bit options are listed, then Virtualization must be enabled at the BIOS level.  
   For Lenovo: In BIOS (press F1 during start up) navigate to `Security > Virtualization  > Intel (R) Virtualization Technology` and set it to  `[Enabled]`
 
-## Installing on the host machine (Windows assumed)
+### Installing on the host machine (Windows assumed)
 This has been tested on Windows 7 and 10.  
 
 __FOR WINDOWS 7__ Ensure that VirtualBox is __not__ installed under `C:\Program Files\` (see above).  
