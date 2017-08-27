@@ -24,7 +24,7 @@ ansible-playbook -i ansible-hosts ~/xymon-plays/ansible/xymon-server.yml
 
 The command below will setup Xymon server for this test scenario.    
 It is a prerequisite for this playbook to run that WinRM is configured and running on your Windows machine.  
-[Click this link to see how to setup WinRM](https://github.com/henrikring/TODO/README.md#enable-winrm-on-windows-host)
+[Click this link to see how to setup WinRM](SETUP-WINRM.md)
 
 ```bash
 cd /vagrant
@@ -46,7 +46,7 @@ ansible-playbook -i ansible-hosts ~/xymon-plays/ansible/xymon-client-linux.yml
 Login to the `xymon` box as vagrant/vagrant.
 The command below will install a Xymon client (PowerShell based) on your host machine.  
 It is a prerequisite for this playbook to run that WinRM is configured and running.  
-[Click this link to see how to setup WinRM](https://github.com/henrikring/TODO/README.md#enable-winrm-on-windows-host)
+[Click this link to see how to setup WinRM](SETUP-WINRM.md)
 
 ```bash
 cd /vagrant
