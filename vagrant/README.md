@@ -47,7 +47,7 @@ cd /vagrant
 ansible-playbook -i ansible-hosts ~/xymon-plays/ansible/xymon-server.yml
 ```
 
-The command below will configure Xymon server for this test scenario (create a hosts.cfg and add Windows defaults to analysis.cfg)   
+The command below will configure the Xymon server for this test scenario (create a hosts.cfg and add Windows defaults to analysis.cfg)   
 It is a prerequisite for this playbook to run that WinRM is configured and running configure your Windows machine.  
 [Click this link to see how to setup WinRM](SETUP-WINRM.md)
 
