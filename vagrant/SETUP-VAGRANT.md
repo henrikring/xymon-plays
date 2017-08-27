@@ -5,10 +5,12 @@
   If you wish to also use Cygwin as your git command line client (works very well), but there are many other ways of having a command line and Git setup on a Windows host.
 * Install VirtualBox: https://www.virtualbox.org/wiki/Downloads  
   If your already have VirtualBox installed make sure that you have at least version 5.1.22 (or you can encounter problems with shared folders).  
+  Version 5.1.26 recommended.
   __For Windows 7__: Ensure that Virtual Box is not installed under `C:\Program Files\` use eg `C:\Appl\Oracle\VirtualBox`.  
   This works seamless on the standard path on Windows 10.
 * Install Vagrant: https://www.vagrantup.com/downloads.html  
-  Use default all the way ... next, next, next, install!
+  Use default all the way ... next, next, next, install!  
+  Recommended: version: 1.9.7
 * Enable virtualization on BIOS level  
   On some laptops hardware support for virtualization may be disabled by default.
   In order to use any virtualization software that support needs to be enabled.  
