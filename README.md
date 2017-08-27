@@ -6,7 +6,7 @@ The repository contains:
   - Xymon Server on Redhat/CentOS 7
   - Xymon Client on RedHat/CentOS 7
   - Windows Client (Powershell based)
-- vagrant: a vagrant setup to test playbooks and playa around with a Xymon setup
+- vagrant: A vagrant setup to test playbooks and play around with a Xymon setup
   - See [Description of the Xymon vagrant setup](vagrant/README.md)
 
 Use of the Ansible scripts is described on the Vagrant setup.
