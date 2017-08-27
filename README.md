@@ -9,4 +9,4 @@ The repository contains:
 - vagrant: a vagrant setup to test playbooks and playa around with a Xymon setup
   - See [Description of the vagrant setup](vagrant/README.md)
 
-Use of the Ansible script is described on the Vagrant setup.
+Use of the Ansible scripts is described on the Vagrant setup.
