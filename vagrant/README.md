@@ -36,7 +36,8 @@ vagrant up
 
 
 ### Install Xymon server
-Login to the `xymon` (eg. `ssh vagrant@xymon -p 2222`  or `vagrant ssh`) box (is also Ansible control machine) as vagrant/vagrant.
+Login to the `xymon` machine (eg. `ssh vagrant@xymon -p 2222`  or `vagrant ssh`) as vagrant/vagrant.  
+The xymon machine b is also an Ansible control machine.
 
 ```bash
 cd /vagrant
