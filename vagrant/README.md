@@ -25,10 +25,10 @@ On your Windows host open a Cygwin prompt:
 cd /cygdrive/c/github/xymon-plays/vagrant
 vagrant up
 
-# If Vagrant fails in bringe up the three servers you can delete the VMs and start over, by using the command:
+# If Vagrant fails in bringing up the three servers you can delete the VMs and start over, by using the command:
 vagrant destroy -f
 
-# and the start again:
+# and then start again:
 vagrant up
 
 ```
