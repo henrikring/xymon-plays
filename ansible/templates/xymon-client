@@ -1,0 +1,24 @@
+#!/bin/sh
+#
+# script for starting xymon client
+#
+# chkconfig: 235 99 01
+# description: Xymon Client
+#
+case "$1" in
+	start)
+		{{ xymon_client_dir }}/runclient.sh start
+		;;
+	stop)
+		{{ xymon_client_dir }}/runclient.sh stop
+		;;
+	status)
+		{{ xymon_client_dir }}/runclient.sh status
+		;;
+	restart|reload)
+		{{ xymon_client_dir }}/runclient.sh restart
+		;;
+	*)
+		echo $"Usage: $0 {start|stop|status|restart)"
+		exit 1
+esac

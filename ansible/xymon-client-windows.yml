@@ -1,0 +1,66 @@
+---
+- hosts: "windows"
+
+  vars_files:
+    - "vars/common.yml"
+
+  vars:
+    sf_commit_url: "https://sourceforge.net/p/xymon/code/8012/tree/sandbox/WinPSClient/" # The commit ID is: 8012
+    winpsclient_files:
+        - { file: "nssm.exe", checksum: "sha256:eee9c44c29c2be011f1f1e43bb8c3fca888cb81053022ec5a0060035de16d848" }
+        - { file: "xymonclient.ps1", checksum: "sha256:54c3382b5c92cb9b91ff3e25383b89c75729cccd78b92f33683d5cea299c40bd" }
+        - { file: "xymonsend.ps1", checksum: "sha256:f55699305bd49050e1b2641f19ddd5ad3bf122be00ce75b8e629764da6bc9eb1" }
+    xymon_win_client_name: "XymonPSClient"
+
+  tasks:
+    - name: create download dir for WinPSClient files on control machine
+      file:
+        path: "~/winpsclient/"
+        state: "directory"
+      delegate_to: "127.0.0.1"
+      run_once: true
+
+    - name: get WinPSClient files to control machine
+      get_url:
+        url: "{{ sf_commit_url }}{{ item.file }}?format=raw"
+        dest: "~/winpsclient/{{ item.file }}"
+        checksum: "{{ item.checksum }}"
+      with_items: "{{ winpsclient_files }}"
+      delegate_to: "127.0.0.1"
+      run_once: true
+
+    - name: ensure target direcoty present
+      win_file:
+        path: "{{ ansible_env.ProgramFiles }}\\{{ xymon_win_client_name }}"
+        state: "directory"
+
+    - name: move WinPSClient files to target
+      win_copy:
+        src: "~/winpsclient/{{ item.file }}"
+        dest: "{{ ansible_env.ProgramFiles }}\\{{ xymon_win_client_name }}\\{{ item.file }}"
+      with_items: "{{ winpsclient_files }}"
+
+    - name: move templates to target
+      win_template:
+        src: "templates/{{ item }}"
+        dest: "{{ ansible_env.ProgramFiles }}\\{{ xymon_win_client_name }}\\{{ item }}"
+      with_items:
+        - "xymonclient_config.xml"
+        - "install-xymon.ps1"
+
+    - name: install and start xymon client service
+      win_shell: ".\\install-xymon.ps1"
+      args:
+        chdir: "{{ ansible_env.ProgramFiles }}\\{{ xymon_win_client_name }}\\"
+        creates: "{{ ansible_env.ProgramFiles }}\\{{ xymon_win_client_name }}\\{{ xymon_win_client_name }}.installed"
+      register: install_xymon_out
+      failed_when: |
+        not install_xymon_out.stdout | search ('Service ".*" installed successfully')
+
+    - name: cleanup download dir for WinPSClient files on control machine
+      file:
+        path: "~/winpsclient/"
+        state: "absent"
+      delegate_to: "127.0.0.1"
+      run_once: true
+...

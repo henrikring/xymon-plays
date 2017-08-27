@@ -1,0 +1,10 @@
+---
+- hosts: xymon
+  become_user: vagrant
+  become: yes
+  tasks:
+    - name: "clone ansible script repository"
+      git:
+        repo: "https://github.com/henrikring/xymon-plays.git"
+        dest: "/home/vagrant/xymon-plays/"
+...

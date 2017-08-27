@@ -1,0 +1,31 @@
+---
+- hosts: winhost
+  name: gather facts from winhost
+  tasks: [ ]
+
+- hosts: xymon
+  become_user: root
+  become: yes
+  tasks:
+    - name: setup xymon hosts.cfg
+      template:
+        src: "/vagrant/templates/hosts.cfg"
+        dest: "~xymon/server/etc/hosts.cfg"
+        mode: 0644
+        owner: "xymon"
+        group: "xymon"
+
+    - name: add anslysis defaults for windows hosts
+      blockinfile:
+        path: "~xymon/server/etc/analysis.cfg"
+        insertbefore: '^DEFAULT\s*.*'
+        block: |
+          CLASS=powershell
+            LOAD 80 90 # Load threholds are in %
+            MEMSWAP 85 90
+            PORT STATE=LISTENING MIN=0 TRACK=Listen TEXT=Listen
+            LOG %.*  %error -.* COLOR=yellow
+            LOG eventlog:Security  %failure.* COLOR=yellow
+            LOG eventlog:Application  %warning.* COLOR=yellow
+            LOG eventlog:System  %error.* COLOR=yellow
+...

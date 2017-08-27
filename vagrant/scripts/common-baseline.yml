@@ -1,0 +1,41 @@
+---
+- hosts: "all:!windows"
+  become_user: root
+  become: yes
+  tasks:
+    - name: change timezone dk
+      timezone:
+        name: Europe/Copenhagen
+
+    - name: clean repos
+      shell: |
+        yum -y clean all
+      args:
+        executable: /bin/bash
+        warn: no
+      when: no
+
+    - name: upgrade all packages
+      yum:
+        name: '*'
+        state: latest
+
+    - name: install common packages
+      yum: state=present name={{ item }}
+      with_items:
+        - epel-release
+        - wget
+        - ntp
+      notify: restart services
+
+    - name: auto start services at boot
+      service: name={{ item }} enabled=yes
+      with_items:
+        - "ntpd"
+
+  handlers:
+    - name: restart services
+      service: name={{ item }} state=restarted
+      with_items:
+        - "ntpd"
+...

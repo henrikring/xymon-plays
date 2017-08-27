@@ -1,0 +1,241 @@
+---
+- hosts: "xymon_server"
+  become_user: root
+  become: yes
+
+  vars_files:
+    - "vars/common.yml"
+
+  vars:
+    fping_version: "3.16"
+    fping_archive_file_name: "fping-{{ fping_version }}.tar.gz"
+    fping_file_checksum: "sha256:2f753094e4df3cdb1d99be1687c0fb7d2f14c0d526ebf03158c8c5519bc78f54"
+    configure_firewalld: no
+    xymon_base_file_name: "xymon-{{ xymon_version }}"
+    xymon_archive_file_name: "{{ xymon_base_file_name }}.tar.gz"
+
+  tasks:
+    - name: install xymon server pre-requisite packages
+      yum: state=latest name={{ item }}
+      with_items:
+        - pcre-devel
+        - openssl-devel
+        - openldap-devel
+        - rrdtool-devel
+        - httpd
+        - httpd-tools
+        - gcc
+        - make
+
+    - name: get fping install archive
+      get_url:
+        url: "http://fping.org/dist/{{ fping_archive_file_name }}"
+        dest: "/usr/local/{{ fping_archive_file_name }}"
+        checksum: "{{ fping_file_checksum }}"
+
+    - name: build and install fping
+      shell: |
+        cd /usr/local/
+        tar -zxf {{ fping_archive_file_name }}
+        [ $? -ne 0 ] && exit 1
+        rm -f {{ fping_archive_file_name }}
+        cd fping-{{ fping_version }}/
+        ./configure
+        [ $? -ne 0 ] && exit 1
+        make
+        [ $? -ne 0 ] && exit 1
+        make install
+        [ $? -ne 0 ] && exit 1
+        setcap cap_net_raw+ep /usr/local/sbin/fping
+        [ $? -ne 0 ] && exit 1
+        echo "FPING_INSTALL_DONE"
+      args:
+        executable: /bin/bash
+        creates: "/usr/local/sbin/fping"
+      register: fping_install_out
+      changed_when: |
+          "FPING_INSTALL_DONE" in fping_install_out.stdout
+      failed_when:
+        - '"skipped, since" not in fping_install_out.stdout'
+        - '"FPING_INSTALL_DONE" not in fping_install_out.stdout'
+
+    - name: test fping
+      shell: |
+        /usr/local/sbin/fping localhost
+      args:
+        executable: /bin/bash
+      register: fping_test_out
+      changed_when: "false"
+      failed_when: |
+        "is alive" not in fping_test_out.stdout
+
+    - name: check apache mods enabled
+      lineinfile:
+        dest: "/etc/httpd/conf.modules.d/00-base.conf"
+        regexp: '^#*\s*{{ item.line }}'
+        line: "{{ item.line }}"
+        state: "present"
+      with_items:
+        - { line: "LoadModule rewrite_module modules/mod_rewrite.so" }
+        - { line: "LoadModule authz_groupfile_module modules/mod_authz_groupfile.so" }
+      notify: restart apache
+
+    - name: enable apache autostart
+      service: name=httpd.service enabled=yes
+
+    - name: setup firewalld
+      block:
+        - firewalld:
+            port: "1984/tcp"
+            permanent: true
+            state: enabled
+
+        - firewalld:
+            zone: "public"
+            service: "{{ item }}"
+            permanent: true
+            state: enabled
+          with_items:
+            - "http"
+            - "https"
+
+        - name: reload policies
+          shell: |
+            fw_state=$(firewall-cmd --state)
+            [ "x${fw_state}x" == "xrunningx" ] && firewall-cmd --reload
+            exit 0
+          args:
+            executable: /bin/bash
+          changed_when: no
+      when: "configure_firewalld | bool"
+
+    - name: add xymon group
+      group:
+        name: "xymon"
+        state: present
+
+    - name: add xymon user
+      user:
+        name: "xymon"
+        group: "xymon"
+        shell: "/bin/bash"
+        state: present
+
+    - name: apache read on xymon home
+      file:
+        path: "~xymon"
+        mode: 0750
+        group: "apache"
+        state: "directory"
+
+    - name: get xymon install archive
+      get_url:
+        url: "https://sourceforge.net/projects/xymon/files/Xymon/{{ xymon_version }}/{{ xymon_archive_file_name }}/download"
+        dest: "~xymon/{{ xymon_archive_file_name }}"
+        owner: "xymon"
+        group: "xymon"
+
+    - name: unpack installation archive
+      unarchive:
+        src: "~xymon/{{ xymon_archive_file_name }}"
+        dest: "~xymon/"
+        remote_src: True
+        owner: "xymon"
+        group: "xymon"
+
+    - name: template xymon Makefile
+      template:
+        src: "templates/Makefile"
+        dest: "~xymon/{{ xymon_base_file_name }}/Makefile"
+        mode: 0664
+        owner: "xymon"
+        group: "xymon"
+
+    - name: make prepare xymon
+      make:
+        chdir: "~xymon/{{ xymon_base_file_name }}/"
+      become: yes
+      become_user: "xymon"
+
+    - name: make install xymon
+      make:
+        chdir: "~xymon/{{ xymon_base_file_name }}/"
+        target: "install"
+
+    - name: xymon server config
+      lineinfile:
+        dest: "~xymon/server/etc/xymonserver.cfg"
+        regexp: "{{ item.regexp }}"
+        line: "{{ item.line }}"
+        state: "present"
+      with_items:
+        - { line: 'XYMONSERVERHOSTNAME="{{ ansible_hostname }}" # The hostname of your server', regexp: '^XYMONSERVERHOSTNAME='}
+        - { line: 'XYMONSERVERIP="{{ xymon_server_ip }}"  # The IP-address of your server. Use the real one, not 127.0.0.1 .', regexp: '^XYMONSERVERIP=' }
+        - { line: 'XYMONSERVERWWWNAME="{{ xymon_dns_name }}"  # The name used for this hosts'' webserver', regexp: '^XYMONSERVERWWWNAME=' }
+        - { line: 'MAXMSG_CLIENT=768 # clientdata messages (default=512k)', regexp: '^#*\s*MAXMSG_CLIENT=' }
+        - { line: 'MAXMSG_STATUS=768 # general "status" messages (default=256k)', regexp: '^#*\s*MAXMSG_STATUS=' }
+
+    - name: customize startup script
+      lineinfile:
+        dest: "~xymon/{{ xymon_base_file_name }}/rpm/xymon-init.d"
+        regexp: "{{ item.regexp }}"
+        line: "{{ item.line }}"
+        state: "present"
+        insertafter: "^DESC="
+      with_items:
+        - { line: 'DAEMON=~xymon/server/bin/xymon.sh', regexp: '^DAEMON='}
+        - { line: 'unset http_proxy', regexp: '^unset http_proxy'}
+        - { line: 'unset https_proxy', regexp: '^unset https_proxy'}
+
+    - name: copy startup script
+      copy:
+        src: "~xymon/{{ xymon_base_file_name }}/rpm/xymon-init.d"
+        dest: "/etc/init.d/xymon"
+        owner: "xymon"
+        group: "xymon"
+        mode: 0744
+        remote_src: true
+
+    - name: configure Apache with the Xymon definitions
+      file:
+        src: "~xymon/server/etc/xymon-apache.conf"
+        dest: "/etc/httpd/conf.d/xymon-apache.conf"
+        state: link
+      notify: restart apache
+
+    - name: make auto redirect to /xymon
+      blockinfile:
+        path: "~xymon/server/etc/xymon-apache.conf"
+        insertafter: "EOF"
+        block: |
+          <If "%{HTTP_HOST} == '{{ xymon_dns_name }}'">
+            RedirectMatch "^/$" "http://{{ xymon_dns_name }}/xymon/"
+          </If>
+      notify: restart apache
+
+    - name: make a index.html to avoid 403 not found when probing apache
+      copy:
+        dest: "/var/www/html/index.html"
+        content: "hello!"
+        owner: "apache"
+        group: "apache"
+
+    - name: enable and start xymon service
+      service:
+        name: "xymon"
+        state: "started"
+        enabled: "yes"
+
+     # Prepare client install packages
+    - name: make client archive
+      archive:
+        path: "~xymon/client/"
+        dest: "~xymon/{{ xymon_client_archive_file_name }}"
+        format: gz
+        owner: "xymon"
+        group: "xymon"
+
+  handlers:
+    - name: restart apache
+      service: name=httpd.service state=restarted
+...

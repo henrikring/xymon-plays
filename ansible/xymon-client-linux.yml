@@ -1,0 +1,86 @@
+---
+- hosts: "centos:redhat:!xymon_server"
+  become_user: root
+  become: yes
+
+  vars_files:
+    - "vars/common.yml"
+
+  vars:
+    xymon_client_dir: "/opt/xymon-client"
+
+  tasks:
+    - name: fetch client installer
+      fetch:
+        src: "~xymon/{{ xymon_client_archive_file_name }}"
+        dest: "~/{{ xymon_client_archive_file_name }}"
+        flat: "yes"
+        fail_on_missing: "yes"
+      delegate_to: "{{ xymon_server_ip }}"
+      register: fetch_client_installer_out
+      run_once: true
+
+    - name: check if xymon client dir exist
+      stat:
+        path: "{{ xymon_client_dir }}/runclient.sh"
+      register: xymon_dir
+
+    - name: ensure client dir
+      block:
+        # ensure client dir
+        - file:
+            path: "{{ xymon_client_dir }}"
+            owner: "root"
+            group: "root"
+            mode: 0755
+            state: "directory"
+
+        # name: unpack installer archive
+        - unarchive:
+            src: "~/{{ xymon_client_archive_file_name }}"
+            dest: "{{ xymon_client_dir }}/"
+            owner: "root"
+            group: "root"
+          notify: restart xymon service
+
+        # name: create service control script
+        - template:
+            src: "templates/xymon-client"
+            dest: "/etc/init.d/xymon-client"
+            mode: 0755
+            owner: "root"
+            group: "root"
+          notify: restart xymon service
+
+        # remove installer archive
+        - file:
+            path: "{{ xymon_client_dir }}/{{ xymon_client_archive_file_name }}"
+            state: "absent"
+      when: not xymon_dir.stat.exists
+
+    - name: xymon server config
+      lineinfile:
+        dest: "{{ xymon_client_dir }}/etc/xymonclient.cfg"
+        regexp: "{{ item.regexp }}"
+        line: "{{ item.line }}"
+        state: "present"
+      with_items:
+        - { line: 'XYMSRV="{{ xymon_server_ip }}"  # IP address of the Xymon server', regexp: '^XYMSRV=' }
+      notify: restart xymon service
+
+    - name: enable xymon service
+      service:
+        name: "xymon-client"
+        enabled: "yes"
+      notify: restart xymon service
+
+    - name: remove client installer locally
+      local_action: file path="{{ fetch_client_installer_out.dest }}" state="absent"
+      run_once: true
+
+  handlers:
+    - name: restart xymon service
+      service:
+        name: "xymon-client"
+        state: "restarted"
+...

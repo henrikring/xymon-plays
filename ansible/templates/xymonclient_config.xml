@@ -1,0 +1,12 @@
+<XymonSettings>
+
+  <servers>{{ xymon_server_ip }}</servers>
+
+  <clientlogfile>%TEMP%\xymonclient.log</clientlogfile>
+  <clientconfigfile>%ProgramFiles%\XymonPSClient\tmp\clientconfig.cfg</clientconfigfile>
+
+  <clientfqdn>1</clientfqdn>
+  <clientlower>1</clientlower>
+
+  <clientremotecfgexec>1</clientremotecfgexec>
+</XymonSettings>

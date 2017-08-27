@@ -1,0 +1,39 @@
+---
+- hosts: xymon
+  tasks:
+    - name: move private key files to host file system and set mode
+      shell: |
+        # On a Windows host the /vagrant file system does not support
+        # file modes - all files are rwxrwxrwx. ssh will not use private_key
+        # keys with such permisions.
+        mkdir -p ~/.ssh
+        chmod 700 ~/.ssh
+        for file in /vagrant/.vagrant/machines/*/virtualbox/private_key ; do
+          h=$(echo "${file}" | cut -d'/' -f5)
+          dest="$(echo ~)/.ssh/private_key_${h}"
+          cp -f "${file}" "${dest}"
+          chmod 600 "${dest}"
+        done;
+      args:
+        executable: /bin/bash
+
+    - name: initialize .git-credentials
+      copy:
+         src: "/vagrant/templates/template.git-credentials"
+         dest: "/home/vagrant/.git-credentials"
+         remote_src: yes
+         group: "vagrant"
+         owner: "vagrant"
+         mode: "0600"
+         force: no
+
+    - name: initialize .gitconfig
+      copy:
+         src: "/vagrant/templates/template.gitconfig"
+         dest: "/home/vagrant/.gitconfig"
+         remote_src: yes
+         group: "vagrant"
+         owner: "vagrant"
+         mode: "0600"
+         force: no
+...

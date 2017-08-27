@@ -1,0 +1,85 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+require 'yaml'
+
+def no_cpus_to_user_per_vm()
+  if RbConfig::CONFIG['host_os'] =~ /mswin|mingw|cygwin/
+    require 'win32ole'
+    wmi = WIN32OLE.connect("winmgmts://")
+    cpu = wmi.ExecQuery("select NumberOfCores from Win32_Processor")
+    if cpu.to_enum.first.NumberOfCores >= 6
+      return 6
+    elsif cpu.to_enum.first.NumberOfCores >= 4
+      return 4
+    else
+      return 2
+    end
+  end
+  # Other OSs
+  return 2
+end
+
+Vagrant.configure("2") do |config|
+  NO_CPUS = no_cpus_to_user_per_vm()
+
+  config.vm.box = "bento/centos-7.3"
+  config.vm.graceful_halt_timeout = 180 # seconds
+  # config.vm.box_check_update = false
+  # config.vm.box_version = "2.3.8"
+  config.vm.box_version = "201708.22.0"
+  config.ssh.insert_key = true
+  #config.ssh.forward_agent = true
+  #config.vbguest.auto_update = true
+
+  # Provider-specific configuration (VirtualBox)
+  config.vm.provider "virtualbox" do |vb|
+    vb.memory = "256"
+    vb.cpus = NO_CPUS
+  end
+
+  # Common Setup
+  # if File.directory? ('C:/')
+  #   config.vm.synced_folder "C:/", "/vagrant_c"
+  # end
+
+
+  # Test server 1
+  config.vm.define "svr1" do |cfg|
+    cfg.vm.hostname = "svr1"
+    cfg.vm.network "private_network", ip: "10.10.10.11"
+    cfg.vm.network "forwarded_port", guest: 22, host: 2222, id: "ssh", disabled: true
+    cfg.vm.network "forwarded_port", guest: 22, host: 2223, host_ip: "127.0.0.1", auto_correct: true
+  end
+
+  # Test server 2
+  config.vm.define "svr2" do |cfg|
+    cfg.vm.hostname = "svr2"
+    cfg.vm.network "private_network", ip: "10.10.10.12"
+    cfg.vm.network "forwarded_port", guest: 22, host: 2222, id: "ssh", disabled: true
+    cfg.vm.network "forwarded_port", guest: 22, host: 2224, host_ip: "127.0.0.1", auto_correct: true
+  end
+
+  # Xymon server and Ansible control machine
+  config.vm.define "xymon" do |xymon|
+    xymon.vm.hostname = "xymon"
+    xymon.vm.network "private_network", ip: "10.10.10.10"
+    xymon.vm.network "forwarded_port", guest: 22, host: 2222, id: "ssh", disabled: true
+    xymon.vm.network "forwarded_port", guest: 22, host: 2222, host_ip: "127.0.0.1", auto_correct: true
+    xymon.vm.network "public_network"
+
+    xymon.vm.provision "shell", path: "scripts/install-ansible.sh"
+
+    xymon.vm.provision "ansible_local" do |ansible|
+      ansible.playbook = "scripts/init-control-machine.yml"
+    end
+
+    xymon.vm.provision "ansible_local" do |ansible|
+      ansible.playbook = "scripts/install-git-client.yml"
+    end
+
+    # Using the ansible_local method fails to connect to clients ? The above shell command works.
+    xymon.vm.provision "shell", inline: "cd /vagrant ; ansible-playbook scripts/common-baseline.yml"
+    xymon.vm.provision "shell", inline: "cd /vagrant ; ansible-playbook scripts/setup-repo-clones.yml", privileged: false
+  end
+end

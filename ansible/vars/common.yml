@@ -1,0 +1,6 @@
+xymon_server_ip: "10.10.10.10"
+xymon_dns_name: "xymon"
+
+xymon_version: "4.3.28"
+xymon_client_base_file_name: "xymon-client{{ xymon_version }}"
+xymon_client_archive_file_name: "{{ xymon_client_base_file_name }}.tar.gz"

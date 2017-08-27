@@ -1,0 +1,27 @@
+---
+- hosts: xymon
+  become_user: root
+  become: yes
+  vars:
+    - lfs_installer_file_name: "git-lfs-2.1.0-1.el7.x86_64.rpm"
+  tasks:
+    - name: install git client
+      yum: state=present name={{ item }}
+      with_items:
+        - git
+
+    - name: get git lfs installer
+      get_url:
+        url: "https://packagecloud.io/github/git-lfs/packages/el/7/{{ lfs_installer_file_name }}/download"
+        dest: "/root/{{ lfs_installer_file_name }}"
+
+    - name: unpack and install git lfs
+      shell: |
+        cd /root/
+        rpm -Uvh git-lfs-2.1.0-1.el7.x86_64.rpm
+        rm -f git-lfs-2.1.0-1.el7.x86_64.rpm
+        git lfs install
+        touch "{{ lfs_installer_file_name }}.installed"
+      args:
+        executable: "/bin/bash"
+        creates: "/root/{{ lfs_installer_file_name }}.installed"
