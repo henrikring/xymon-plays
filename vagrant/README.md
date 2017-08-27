@@ -15,7 +15,25 @@ Add the following to your hosts file (`C:\Windows\system32\drivers\etc\hosts`)
 This will enable you to access Xymon with your browser on http://xymon/ once the setup is done.
 
 ### Install Vagrant
-If you are unfamiliar with a Vagrant setup you can find a quick guide here: [Vagrant quick setup](SETUP-VAGRANT.md)
+If you are unfamiliar with a Vagrant setup you can find a quick guide here: [Vagrant quick setup](SETUP-VAGRANT.md)  
+This guide will also show you to clone this Git repository to your local hardisk.
+
+### Initialize the Vagrant environment
+On your Windows host open a Cygwin prompt:
+
+```bash
+cd /cygdrive/c/github/xymon-plays/vagrant
+vagrant up
+
+# If Vagrant fails in bringe up the three servers you can delete the VMs and start over, by using the command:
+vagrant destroy -fi
+
+# and the start again:
+vagrant up
+
+```
+
+
 
 ### Install Xymon server
 Login to the `xymon` (eg. `ssh vagrant@xymon -p 2222`  or `vagrant ssh`) box (is also Ansible control machine) as vagrant/vagrant.
