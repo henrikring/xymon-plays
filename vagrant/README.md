@@ -55,11 +55,12 @@ It is a prerequisite for this playbook to run that WinRM is configured and runni
 cd /vagrant
 ansible-playbook -i ansible-hosts scripts/copy-xymon-hosts-template.yml -u henrik -k
 ```
-Change the username (`-u` parameter) in the above to a user that has administrative permissions on
+Change the username (`-u` parameter) in the above command to a user that has administrative permissions on
 the Windows host (is a member of Local Administrators). If you are using an AD account the username
 should be suffixed with the domain name eg. `user@company.com`.
 
 ### Install Xymon Linux Clients
+The following playbook will install a Xymon client on the two Linux servers (svr1 and svr2).  
 Login to the `xymon` box as vagrant/vagrant.
 
 ```bash
