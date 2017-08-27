@@ -1,4 +1,6 @@
 ## Enable WinRM on Windows host
+Make sure you obtain permission of the owner of the machine on which you run the script before doing so. If it is a company machine there might be policies that prohibit the use of WinRM!
+
 To be able to control your Windows host from Ansible on the guest VM, Windows Remote Management (WinRM) must be configured.
 
 Download the following Powershell (POSH) script: https://github.com/ansible/ansible/blob/devel/examples/scripts/ConfigureRemotingForAnsible.ps1
