@@ -5,7 +5,7 @@
         clean = git-lfs clean -- %f
 [user]
         name = Henrik Ring
-        email = hring@csc.com
+        email = henrikring@gmail.com
 [credential]
         helper = store --file ~/.git-credentials
 [color]
