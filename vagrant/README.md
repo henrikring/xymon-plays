@@ -14,6 +14,9 @@ Add the following to your hosts file (`C:\Windows\system32\drivers\etc\hosts`)
 ```
 This will enable you to access Xymon with your browser on http://xymon/ once the setup is done.
 
+### Install Vagrant
+If you are unfamiliar with a Vagrant setup you can find a quick guide here: [Vagrant quick setup](SETUP-VAGRANT.md)
+
 ### Install Xymon server
 Login to the `xymon` (eg. `ssh vagrant@xymon -p 2222`  or `vagrant ssh`) box (is also Ansible control machine) as vagrant/vagrant.
 
