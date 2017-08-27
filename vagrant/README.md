@@ -15,15 +15,15 @@ Add the following to your hosts file (`C:\Windows\system32\drivers\etc\hosts`)
 This will enable you to access Xymon with your browser on http://xymon/ once the setup is done.
 
 ### Install Vagrant
-If you are unfamiliar with a Vagrant setup you can find a quick guide here: [Vagrant quick setup](SETUP-VAGRANT.md)  
-This guide will also show you to clone this Git repository to your local hardisk.
+If you are unfamiliar with a Vagrant setup you can find a quick guide start here: [Vagrant quick setup](SETUP-VAGRANT.md)  
+This guide will also show you how to clone this Git repository to your local hardisk.
 
 ### Initialize the Vagrant environment
-On your Windows host open a Cygwin prompt:
+To intialize the Vagrant environment and spin up the 3 servers on your Windows host open a Cygwin prompt:
 
 ```bash
-cd /cygdrive/c/github/xymon-plays/vagrant
-vagrant up
+cd /cygdrive/c/github/xymon-plays/vagrant # optionally change to the path to where you cloned the repository to
+vagrant up # creates the 3 server images and boots the servers.
 
 # If Vagrant fails in bringing up the three servers you can delete the VMs and start over, by using the command:
 vagrant destroy -f
@@ -31,21 +31,24 @@ vagrant destroy -f
 # and then start again:
 vagrant up
 
+# To gracefully shutdown the servers, preserving they "hardrives" and data:
+vagrant halt
+
+# and then start again:
+vagrant up
 ```
 
-
-
 ### Install Xymon server
-Login to the `xymon` machine (eg. `ssh vagrant@xymon -p 2222`  or `vagrant ssh`) as vagrant/vagrant.  
-The xymon machine b is also an Ansible control machine.
+Login to the `xymon` machine (eg. with `ssh vagrant@xymon -p 2222` or `vagrant ssh`) as vagrant/vagrant.  
+The xymon machine is also an Ansible control machine.
 
 ```bash
 cd /vagrant
 ansible-playbook -i ansible-hosts ~/xymon-plays/ansible/xymon-server.yml
 ```
 
-The command below will setup Xymon server for this test scenario.    
-It is a prerequisite for this playbook to run that WinRM is configured and running on your Windows machine.  
+The command below will configure Xymon server for this test scenario (create a hosts.cfg and add Windows defaults to analysis.cfg)   
+It is a prerequisite for this playbook to run that WinRM is configured and running configure your Windows machine.  
 [Click this link to see how to setup WinRM](SETUP-WINRM.md)
 
 ```bash
