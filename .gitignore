@@ -1,0 +1,7 @@
+.vagrant
+*.pyc
+*.retry
+*.tar.gz
+.vscode
+*.log
+*.swp
