@@ -8,8 +8,8 @@
         # keys with such permisions.
         mkdir -p ~/.ssh
         chmod 700 ~/.ssh
-        for file in /vagrant/.vagrant/machines/*/virtualbox/private_key ; do
-          h=$(echo "${file}" | cut -d'/' -f5)
+        for file in /vagrant/vagrant/.vagrant/machines/*/virtualbox/private_key ; do
+          h=$(echo "${file}" | cut -d'/' -f6)
           dest="$(echo ~)/.ssh/private_key_${h}"
           cp -f "${file}" "${dest}"
           chmod 600 "${dest}"
@@ -19,7 +19,7 @@
 
     - name: initialize .git-credentials
       copy:
-         src: "/vagrant/templates/template.git-credentials"
+         src: "/vagrant/vagrant/templates/template.git-credentials"
          dest: "/home/vagrant/.git-credentials"
          remote_src: yes
          group: "vagrant"
@@ -29,7 +29,7 @@
 
     - name: initialize .gitconfig
       copy:
-         src: "/vagrant/templates/template.gitconfig"
+         src: "/vagrant/vagrant/templates/template.gitconfig"
          dest: "/home/vagrant/.gitconfig"
          remote_src: yes
          group: "vagrant"

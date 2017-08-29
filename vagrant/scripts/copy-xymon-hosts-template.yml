@@ -9,7 +9,7 @@
   tasks:
     - name: setup xymon hosts.cfg
       template:
-        src: "/vagrant/templates/hosts.cfg"
+        src: "/vagrant/vagrant/templates/hosts.cfg"
         dest: "~xymon/server/etc/hosts.cfg"
         mode: 0644
         owner: "xymon"

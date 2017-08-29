@@ -43,8 +43,8 @@ Login to the `xymon` machine (eg. with `ssh vagrant@xymon -p 2222` or `vagrant s
 The xymon machine is also an Ansible control machine.
 
 ```bash
-cd /vagrant
-ansible-playbook -i ansible-hosts ~/xymon-plays/ansible/xymon-server.yml
+cd /vagrant/vagrant
+ansible-playbook -i ansible-hosts ../ansible/xymon-server.yml
 ```
 
 The command below will configure the Xymon server for this test scenario (create a hosts.cfg and add Windows defaults to analysis.cfg)   
@@ -52,7 +52,7 @@ It is a prerequisite for this playbook to run that WinRM is configured and runni
 [Click this link to see how to setup WinRM](SETUP-WINRM.md)
 
 ```bash
-cd /vagrant
+cd /vagrant/vagrant
 ansible-playbook -i ansible-hosts scripts/copy-xymon-hosts-template.yml -u henrik -k
 ```
 Change the username (`-u` parameter) in the above command to a user that has administrative permissions on
@@ -64,8 +64,8 @@ The following playbook will install a Xymon client on the two Linux servers (svr
 Login to the `xymon` box as vagrant/vagrant.
 
 ```bash
-cd /vagrant
-ansible-playbook -i ansible-hosts ~/xymon-plays/ansible/xymon-client-linux.yml
+cd /vagrant/vagrant
+ansible-playbook -i ansible-hosts ../ansible/xymon-client-linux.yml
 ```
 
 ### Install Xymon Windows Clients
@@ -75,8 +75,8 @@ It is a prerequisite for this playbook to run that WinRM is configured and runni
 [Click this link to see how to setup WinRM](SETUP-WINRM.md)
 
 ```bash
-cd /vagrant
-ansible-playbook -i ansible-hosts ~/xymon-plays/ansible/xymon-client-windows.yml -u henrik -k
+cd /vagrant/vagrant
+ansible-playbook -i ansible-hosts ../ansible/xymon-client-windows.yml -u henrik -k
 ```
 Change the username (`-u` parameter) in the above to a user that has administrative permissions on
 the host (is a member of Local Administrators). If you are using an AD account the username

@@ -134,6 +134,8 @@
         dest: "~xymon/{{ xymon_archive_file_name }}"
         owner: "xymon"
         group: "xymon"
+      register: get_xymon_archive_out
+      until: get_xymon_archive_out|succeeded
       retries: 5
       delay: 10
 
