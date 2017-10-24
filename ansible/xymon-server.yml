@@ -26,6 +26,7 @@
         - httpd-tools
         - gcc
         - make
+        - net-tools
 
     - name: get fping install archive
       get_url:
