@@ -77,7 +77,7 @@
         name: "Restart XymonPSClient Service Daily"
         description: "Restart XymonPSClient Service Daily"
         executable: cmd
-        arguments: "/C 'net stop XymonPSClient & net start XymonPSClient'"
+        arguments: '/C "net stop XymonPSClient & net start XymonPSClient"'
         time: "02:00"
         frequency: "daily"
         state: "present"
