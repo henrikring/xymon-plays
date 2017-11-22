@@ -10,6 +10,11 @@
     xymon_client_dir: "/opt/xymon-client"
 
   tasks:
+    - name: install prerequisite packages
+      yum: state=latest name={{ item }}
+      with_items:
+        - net-tools
+
     - name: check if client archive exists locally
       stat:
         path: "~/{{ xymon_client_archive_file_name }}"
