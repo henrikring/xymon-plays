@@ -12,6 +12,10 @@
         - { file: "xymonsend.ps1", checksum: "sha256:f55699305bd49050e1b2641f19ddd5ad3bf122be00ce75b8e629764da6bc9eb1" }
     xymon_win_client_name: "XymonPSClient"
 
+  environment:
+    http_proxy: "{{ proxy_url|default(omit) }}"
+    https_proxy: "{{ proxy_url|default(omit) }}"
+
   tasks:
     - name: create download dir for WinPSClient files on control machine
       file:
@@ -29,10 +33,15 @@
       delegate_to: "127.0.0.1"
       run_once: true
 
-    - name: ensure target direcoty present
+    - name: ensure target directory present
       win_file:
         path: "{{ ansible_env.ProgramFiles }}\\{{ xymon_win_client_name }}"
         state: "directory"
+
+    - name: preemptively stop xymon client
+      win_command: "net stop XymonPSClient"
+      failed_when: no
+      changed_when: no
 
     - name: move WinPSClient files to target
       win_copy:
@@ -56,6 +65,24 @@
       register: install_xymon_out
       failed_when: |
         not install_xymon_out.stdout | search ('Service ".*" installed successfully')
+
+    - name: preemptively start xymon client
+      win_command: "net start XymonPSClient"
+      changed_when: no
+      when: 'not install_xymon_out.changed'
+
+    # The Powershell.exe process memory consumption tends to grow over time, therefor the daily restart
+    - name: schedule xymon client daily restart
+      win_scheduled_task:
+        name: "Restart XymonPSClient Service Daily"
+        description: "Restart XymonPSClient Service Daily"
+        executable: cmd
+        arguments: "/C 'net stop XymonPSClient & net start XymonPSClient'"
+        time: "02:00"
+        frequency: "daily"
+        state: "present"
+        enabled: yes
+        user: 'SYSTEM'
 
     - name: cleanup download dir for WinPSClient files on control machine
       file:
